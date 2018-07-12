@@ -1,0 +1,34 @@
+/**
+ * @author Sukhitha Amarakoon (samarakoon@virtusa.com)
+ */
+package {{package}};
+
+import org.bian.annotation.*;
+import org.bian.dto.BianRequest;
+import org.bian.dto.BianResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.bian.dto.*;
+
+@BianRestController
+{{#operations}}
+public class {{classname}}Controller {
+{{#jdk8}}
+
+    {{^isDelegate}}
+    Logger log = LoggerFactory.getLogger({{classname}}.class);
+    {{/isDelegate}}
+{{/jdk8}}
+
+	@Autowired
+	{{classname}}Service service;
+{{#operation}}
+	
+	@{{{actionTermTitleCase}}}()
+	public BianResponse<{{returnType}}> {{{actionTermCamelCase}}}(@PathVariable("id") String id, @RequestBody BianRequest<{{#bodyParam}}{{baseType}}{{/bodyParam}}> bianRequest) {
+		return BianResponse.forSuccess(service.{{{actionTermCamelCase}}}(id, bianRequest.getData()));
+	}
+{{/operation}}
+}
+{{/operations}}

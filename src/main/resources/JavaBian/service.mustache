@@ -1,0 +1,16 @@
+/**
+ * @author Sukhitha Amarakoon (samarakoon@virtusa.com)
+ */
+package {{package}};
+
+import org.bian.dto.*;
+
+{{#operations}}
+public interface {{classname}}Service {
+
+{{#operation}}
+	{{returnType}} {{{actionTermCamelCase}}}(String id, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+	
+{{/operation}}
+}
+{{/operations}}
