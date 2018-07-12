@@ -20,6 +20,7 @@ public class {{classname}}ServiceImpl implements {{classname}}Service {
 	}
 
 {{#operation}}
+{{#vendorExtensions}}
 	public {{returnType}} {{{actionTermCamelCase}}}(String id, {{#bodyParam}}{{baseType}}{{/bodyParam}} request){
 		File file = new File("src/main/resources/{{returnBaseType}}.json");
 		String jsonString = "{}";
@@ -32,6 +33,7 @@ public class {{classname}}ServiceImpl implements {{classname}}Service {
 		//return gson.fromJson("{{#examples}}{{#lambdaRemoveLineBreak}}{{#lambdaEscapeDoubleQuote}}{{{example}}}{{/lambdaEscapeDoubleQuote}}{{/lambdaRemoveLineBreak}}{{/examples}}", {{returnType}}.class);
 	}
 
+{{/vendorExtensions}}
 {{/operation}}
 }
 {{/operations}}

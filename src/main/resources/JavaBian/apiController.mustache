@@ -24,11 +24,12 @@ public class {{classname}}Controller {
 	@Autowired
 	{{classname}}Service service;
 {{#operation}}
-	
+{{#vendorExtensions}}
 	@{{{actionTermTitleCase}}}()
 	public BianResponse<{{returnType}}> {{{actionTermCamelCase}}}(@PathVariable("id") String id, @RequestBody BianRequest<{{#bodyParam}}{{baseType}}{{/bodyParam}}> bianRequest) {
 		return BianResponse.forSuccess(service.{{{actionTermCamelCase}}}(id, bianRequest.getData()));
 	}
+{{/vendorExtensions}}
 {{/operation}}
 }
 {{/operations}}

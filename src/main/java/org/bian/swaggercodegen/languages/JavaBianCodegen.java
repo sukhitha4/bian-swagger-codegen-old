@@ -705,9 +705,13 @@ public class JavaBianCodegen extends AbstractJavaCodegen
 			List<String> actionTerms = new ArrayList<String>();
 			actionTerms.add(actionTermCamelCase);
 
-			vendorExtensions.put("actionTermCamelCase", actionTermCamelCase);
-			vendorExtensions.put("actionTermTitleCase", StringUtils.capitalize(actionTermCamelCase));
-			vendorExtensions.put("actionTerms", actionTerms);
+			op.vendorExtensions.put("actionTermCamelCase", actionTermCamelCase);
+			op.vendorExtensions.put("actionTermTitleCase", StringUtils.capitalize(actionTermCamelCase));
+			op.vendorExtensions.put("actionTerms", actionTerms);
+
+//			additionalProperties.put("actionTermCamelCase", actionTermCamelCase);
+//			additionalProperties.put("actionTermTitleCase", StringUtils.capitalize(actionTermCamelCase));
+//			additionalProperties.put("actionTerms", actionTerms);
 			
 			Object previousServiceDomain = additionalProperties.get("serviceDomain");
 			if (previousServiceDomain != null && !previousServiceDomain.equals(urlChunks[0])) {

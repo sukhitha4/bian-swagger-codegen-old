@@ -9,8 +9,10 @@ import org.bian.dto.*;
 public interface {{classname}}Service {
 
 {{#operation}}
+{{#vendorExtensions}}
 	{{returnType}} {{{actionTermCamelCase}}}(String id, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
 	
+{{/vendorExtensions}}
 {{/operation}}
 }
 {{/operations}}

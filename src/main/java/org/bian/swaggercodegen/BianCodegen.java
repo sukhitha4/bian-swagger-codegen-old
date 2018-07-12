@@ -29,8 +29,7 @@ public class BianCodegen {
                                 String.format(
                                         "Swagger code generator CLI (version %s). More info on swagger.io",
                                         version))
-                        .withDefaultCommand(Langs.class)
-                        .withCommands(Generate.class, Meta.class, Langs.class, Help.class,
+                        .withCommands(Generate.class, Meta.class, Help.class,
                                 ConfigHelp.class, Validate.class, Version.class);
 
         builder.build().parse(args).run();
