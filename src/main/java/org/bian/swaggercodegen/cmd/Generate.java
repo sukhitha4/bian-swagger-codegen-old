@@ -34,7 +34,7 @@ public class Generate implements Runnable {
     @Option(name = {"-v", "--verbose"}, description = "verbose mode")
     private Boolean verbose;
 
-    @Option(name = {"-l", "--lang"}, title = "language", required = true,
+    @Option(name = {"-l", "--lang"}, title = "language",
             description = "client language to generate (maybe class name in classpath, required)")
     private String lang;
 
@@ -206,6 +206,8 @@ public class Generate implements Runnable {
 
         if (isNotEmpty(lang)) {
             configurator.setLang(lang);
+        } else {
+            configurator.setLang("bian");
         }
 
         if (isNotEmpty(output)) {
