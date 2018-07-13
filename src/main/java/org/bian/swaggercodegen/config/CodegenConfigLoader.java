@@ -1,10 +1,6 @@
 package org.bian.swaggercodegen.config;
 
-import static java.util.ServiceLoader.load;
-
-import java.util.ServiceLoader;
-
-import org.bian.swaggercodegen.languages.JavaBianCodegen;
+import org.bian.swaggercodegen.generator.JavaBianCodegen;
 
 import io.swagger.codegen.CodegenConfig;
 

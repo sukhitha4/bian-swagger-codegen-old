@@ -1,5 +1,6 @@
 package org.bian.swaggercodegen.cmd;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.bian.swaggercodegen.config.CodegenConfiguratorUtils.applyAdditionalPropertiesKvpList;
 import static org.bian.swaggercodegen.config.CodegenConfiguratorUtils.applyImportMappingsKvpList;
 import static org.bian.swaggercodegen.config.CodegenConfiguratorUtils.applyInstantiationTypesKvpList;
@@ -7,12 +8,12 @@ import static org.bian.swaggercodegen.config.CodegenConfiguratorUtils.applyLangu
 import static org.bian.swaggercodegen.config.CodegenConfiguratorUtils.applyReservedWordsMappingsKvpList;
 import static org.bian.swaggercodegen.config.CodegenConfiguratorUtils.applySystemPropertiesKvpList;
 import static org.bian.swaggercodegen.config.CodegenConfiguratorUtils.applyTypeMappingsKvpList;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.bian.swaggercodegen.config.CodegenConfigurator;
+import org.bian.swaggercodegen.generator.BianGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,6 @@ import io.airlift.airline.Command;
 import io.airlift.airline.Option;
 import io.swagger.codegen.ClientOptInput;
 import io.swagger.codegen.CodegenConstants;
-import io.swagger.codegen.DefaultGenerator;
 
 /**
  * User: lanwen Date: 24.03.15 Time: 20:22
@@ -291,6 +291,6 @@ public class Generate implements Runnable {
         applyReservedWordsMappingsKvpList(reservedWordsMappings, configurator);
         final ClientOptInput clientOptInput = configurator.toClientOptInput();
 
-        new DefaultGenerator().opts(clientOptInput).generate();
+        new BianGenerator().opts(clientOptInput).generate();
     }
 }

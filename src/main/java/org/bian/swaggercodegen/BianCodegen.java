@@ -2,7 +2,6 @@ package org.bian.swaggercodegen;
 
 import org.bian.swaggercodegen.cmd.ConfigHelp;
 import org.bian.swaggercodegen.cmd.Generate;
-import org.bian.swaggercodegen.cmd.Langs;
 import org.bian.swaggercodegen.cmd.Meta;
 import org.bian.swaggercodegen.cmd.Validate;
 import org.bian.swaggercodegen.cmd.Version;

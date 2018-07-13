@@ -1,4 +1,4 @@
-package org.bian.swaggercodegen.languages;
+package org.bian.swaggercodegen.generator;
 
 import java.io.File;
 import java.io.IOException;
