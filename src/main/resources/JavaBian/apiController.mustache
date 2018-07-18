@@ -6,7 +6,6 @@ package {{controllerPackage}};
 {{#apiInfo}}
 {{#apis}}
 import org.bian.annotation.*;
-{{#operations}}{{#operation}}{{#vendorExtensions}}import org.bian.annotation.actionterm.{{actionTermTitleCase}};{{/vendorExtensions}}{{/operation}}{{/operations}}
 import org.bian.dto.BianRequest;
 import org.bian.dto.BianResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.bian.dto.*;
 import org.bian.service.*;
-
+{{#operations}}{{#operation}}{{#vendorExtensions}}import org.bian.annotation.actionterm.{{actionTermTitleCase}};
+{{/vendorExtensions}}{{/operation}}{{/operations}}
 @BianRestController
 {{#operations}}
 public class ServiceDomainController {
@@ -30,9 +30,9 @@ public class ServiceDomainController {
 	
 {{#operation}}
 {{#vendorExtensions}}
- {{#behavioralQualifier?}}
+ {{#behavioralQualifier}}
 	@BQ("{{behavioralQualifier}}")
- {{/behavioralQualifier?}}
+ {{/behavioralQualifier}}
  {{#actionTerms}}
   {{#initiate}}
 	@{{actionTermTitleCase}}()
