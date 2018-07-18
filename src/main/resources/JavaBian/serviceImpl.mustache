@@ -3,21 +3,13 @@
  */
 package {{package}};
 
-import com.google.gson.Gson;
 import org.springframework.stereotype.Service;
 import org.bian.dto.*;
-import org.apache.commons.io.FileUtils;
-import java.io.File;
-import java.io.IOException;
+import org.bian.util.JsonReader;
 
 {{#operations}}
 @Service
 public class {{classname}}ServiceImpl implements {{classname}}Service {
-	private Gson gson = null;
-	
-	public {{classname}}ServiceImpl() {
-		gson = new Gson();
-	}
 
 {{#operation}}
 {{#vendorExtensions}}

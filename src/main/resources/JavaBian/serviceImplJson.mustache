@@ -1,9 +1,1 @@
-		File file = new File("src/main/resources/{{returnBaseType}}.json");
-		String jsonString = "{}";
-		try {
-			jsonString = FileUtils.readFileToString(file, "UTF-8");
-			return gson.fromJson(jsonString, {{returnType}}.class);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return new {{returnType}}();
-		}
+		return JsonReader.read("src/main/resources/{{returnBaseType}}.json", {{returnType}}.class);
