@@ -30,7 +30,9 @@ public class ServiceDomainController {
 	
 {{#operation}}
 {{#vendorExtensions}}
+ {{#behavioralQualifier?}}
 	@BQ("{{behavioralQualifier}}")
+ {{/behavioralQualifier?}}
  {{#actionTerms}}
   {{#initiate}}
 	@{{actionTermTitleCase}}()
