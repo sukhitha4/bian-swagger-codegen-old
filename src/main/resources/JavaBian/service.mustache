@@ -1,5 +1,5 @@
 /**
- * @author Sukhitha Amarakoon (samarakoon@virtusa.com)
+ * @author Virtusa
  */
 package {{package}};
 
@@ -10,8 +10,68 @@ public interface {{classname}}Service {
 
 {{#operation}}
 {{#vendorExtensions}}
-	{{returnType}} {{{actionTermCamelCase}}}(String id, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+ {{#actionTerms}}
+  {{#initiate}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
 	
+  {{/initiate}}
+  {{#create}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+	
+  {{/create}}
+  {{#activate}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+	
+  {{/activate}}
+  {{#register}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+	
+  {{/register}}
+  {{#configure}}
+	{{returnType}} {{{actionTermCamelCase}}}({{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+	
+  {{/configure}}
+  {{#update}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId{{#behavioralQualifier?}}, String bqReferenceId{{/behavioralQualifier?}}, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+	
+  {{/update}}
+  {{#record}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId{{#behavioralQualifier?}}, String bqReferenceId{{/behavioralQualifier?}}, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+	
+  {{/record}}
+  {{#execute}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId{{#behavioralQualifier?}}, String bqReferenceId{{/behavioralQualifier?}}, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+	
+  {{/execute}}
+  {{#evaluate}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId{{#behavioralQualifier?}}, String bqReferenceId{{/behavioralQualifier?}});
+	
+  {{/evaluate}}
+  {{#provide}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId{{#behavioralQualifier?}}, String bqReferenceId{{/behavioralQualifier?}}, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+	
+  {{/provide}}
+  {{#authorize}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId{{#behavioralQualifier?}}, String bqReferenceId{{/behavioralQualifier?}}, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+	
+  {{/authorize}}
+  {{#request}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId{{#behavioralQualifier?}}, String bqReferenceId{{/behavioralQualifier?}}, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+	
+  {{/request}}
+  {{#terminate}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId{{#behavioralQualifier?}} String bqReferenceId{{/behavioralQualifier?}});
+	
+  {{/terminate}}
+  {{#notify}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId{{#behavioralQualifier?}}, String bqReferenceId{{/behavioralQualifier?}}, {{#bodyParam}}{{baseType}}{{/bodyParam}} request);
+	
+  {{/notify}}
+  {{#retrieve}}
+	{{returnType}} {{{actionTermCamelCase}}}(String crReferenceId{{#behavioralQualifier?}} String bqReferenceId{{/behavioralQualifier?}});
+	
+  {{/retrieve}}
+ {{/actionTerms}}
 {{/vendorExtensions}}
 {{/operation}}
 }

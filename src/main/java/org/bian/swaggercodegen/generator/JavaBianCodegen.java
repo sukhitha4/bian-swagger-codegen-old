@@ -39,6 +39,7 @@ import io.swagger.models.Swagger;
 
 public class JavaBianCodegen extends AbstractJavaCodegen
         implements BeanValidationFeatures, OptionalFeatures {
+	
     static Logger LOGGER = LoggerFactory.getLogger(JavaBianCodegen.class);
     
     public static final String DEFAULT_LIBRARY = "spring-boot";
@@ -78,6 +79,7 @@ public class JavaBianCodegen extends AbstractJavaCodegen
 
     public JavaBianCodegen() {
         super();
+        apiTemplateFiles.remove("api.mustache");
         outputFolder = "generated-code/javaSpring";
         apiTestTemplateFiles.clear(); // TODO: add test template
         embeddedTemplateDir = templateDir = "JavaBian";
@@ -88,6 +90,7 @@ public class JavaBianCodegen extends AbstractJavaCodegen
 
         additionalProperties.put(CONFIG_PACKAGE, configPackage);
         additionalProperties.put(BASE_PACKAGE, basePackage);
+        additionalProperties.put("controllerPackage", controllerPackage);
 
         // spring uses the jackson lib
         additionalProperties.put("jackson", "true");
@@ -247,39 +250,35 @@ public class JavaBianCodegen extends AbstractJavaCodegen
 //        supportingFiles.add(new SupportingFile("pom.mustache", "", "pom.xml"));
 //        supportingFiles.add(new SupportingFile("README.mustache", "", "README.md"));
 
-        if (!this.interfaceOnly) {
-            apiTemplateFiles.put("apiController.mustache", "Controller.java");
-            apiTemplateFiles.put("service.mustache", "Service.java");
-            apiTemplateFiles.put("serviceImpl.mustache", "ServiceImpl.java");
+		if (!this.interfaceOnly) {
+			apiTemplateFiles.put("service.mustache", "Service.java");
+			apiTemplateFiles.put("serviceImpl.mustache", "ServiceImpl.java");
 
-            supportingFiles.add(new SupportingFile("gradle.mustache", "", "gradle.properties"));
-            supportingFiles.add(new SupportingFile("gradlew.mustache", "", "gradlew"));
-            supportingFiles.add(new SupportingFile("gradlew.bat.mustache", "", "gradlew.bat"));
-            supportingFiles.add(new SupportingFile("build.mustache", "", "build.gradle"));
-            supportingFiles.add(new SupportingFile("settings.mustache", "", "settings.gradle"));
-            
-          supportingFiles.add(new SupportingFile("application.java.mustache",
-                  (sourceFolder + File.separator + basePackage).replace(".", java.io.File.separator), "Application.java"));
+			supportingFiles.add(new SupportingFile("gradle.mustache", "", "gradle.properties"));
+			supportingFiles.add(new SupportingFile("gradlew.mustache", "", "gradlew"));
+			supportingFiles.add(new SupportingFile("gradlew.bat.mustache", "", "gradlew.bat"));
+			supportingFiles.add(new SupportingFile("build.mustache", "", "build.gradle"));
+			supportingFiles.add(new SupportingFile("settings.mustache", "", "settings.gradle"));
 
-          supportingFiles.add(new SupportingFile("application.mustache",
-                  ("src.main.resources").replace(".", java.io.File.separator), "application.properties"));
-            
-//          supportingFiles.add(new SupportingFile("apiException.mustache",
-//                  (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator), "ApiException.java"));
-            
-        } else if ( this.swaggerDocketConfig && !library.equals(SPRING_CLOUD_LIBRARY)) {
+			supportingFiles.add(new SupportingFile("application.java.mustache",
+					(sourceFolder + File.separator + basePackage).replace(".", java.io.File.separator), "Application.java"));
+
+			supportingFiles.add(new SupportingFile("application.mustache",
+					("src.main.resources").replace(".", java.io.File.separator), "application.properties"));
+
+			supportingFiles.add(new SupportingFile("apiController.mustache",
+					("src.main.java." + controllerPackage).replace(".", java.io.File.separator), "ServiceDomainController.java"));
+
+			supportingFiles.add(new SupportingFile("BQRequestMappingHandlerMapping.mustache",
+					("src.main.java." + controllerPackage).replace(".", java.io.File.separator), "BQRequestMappingHandlerMapping.java"));
+
+			supportingFiles.add(new SupportingFile("WebMvcConfig.mustache",
+					("src.main.java." + controllerPackage).replace(".", java.io.File.separator), "WebMvcConfig.java"));
+
+		} else if ( this.swaggerDocketConfig && !library.equals(SPRING_CLOUD_LIBRARY)) {
             supportingFiles.add(new SupportingFile("swaggerDocumentationConfig.mustache",
                     (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "SwaggerDocumentationConfig.java"));
         }
-
-//        if ("threetenbp".equals(dateLibrary)) {
-//            supportingFiles.add(new SupportingFile("customInstantDeserializer.mustache",
-//                    (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "CustomInstantDeserializer.java"));
-//            if (library.equals(DEFAULT_LIBRARY) || library.equals(SPRING_CLOUD_LIBRARY)) {
-//                supportingFiles.add(new SupportingFile("jacksonConfiguration.mustache",
-//                        (sourceFolder + File.separator + configPackage).replace(".", java.io.File.separator), "JacksonConfiguration.java"));
-//            }
-//        }
         
         if ((!this.delegatePattern && this.java8) || this.delegateMethod) {
             additionalProperties.put("jdk8-no-delegate", true);
@@ -697,82 +696,135 @@ public class JavaBianCodegen extends AbstractJavaCodegen
     }
     
     private void generateActionTerm(CodegenOperation op) {
-        String[] urlChunks = StringUtils.split(op.path, "/");
-		if (urlChunks.length >= 2) {
-			String actionTermCamelCase = this.resolveActionTerm(WordUtils.uncapitalize(urlChunks[urlChunks.length - 1]),
-					op.httpMethod, urlChunks.length);
-			
-			List<String> actionTerms = new ArrayList<String>();
-			actionTerms.add(actionTermCamelCase);
+		ServiceOperation serviceOperation = this.resolveServiceOperation(op.path, op.httpMethod);
+		String actionTermCamelCase = WordUtils.uncapitalize(serviceOperation.getActionTerm());
 
-			op.vendorExtensions.put("actionTermCamelCase", actionTermCamelCase);
-			op.vendorExtensions.put("actionTermTitleCase", StringUtils.capitalize(actionTermCamelCase));
-			op.vendorExtensions.put("actionTerms", actionTerms);
+		Map<String, Boolean> actionTerms = new HashMap<String, Boolean>();
+		actionTerms.put(actionTermCamelCase, true);
 
-//			additionalProperties.put("actionTermCamelCase", actionTermCamelCase);
-//			additionalProperties.put("actionTermTitleCase", StringUtils.capitalize(actionTermCamelCase));
-//			additionalProperties.put("actionTerms", actionTerms);
-			
-			Object previousServiceDomain = additionalProperties.get("serviceDomain");
-			if (previousServiceDomain != null && !previousServiceDomain.equals(urlChunks[0])) {
-				LOGGER.error("Service Domain is already set as '" + previousServiceDomain
-						+ "'. A new Service Domain is declared in '" + op.path + "' and is not allowed.");
-				LOGGER.error("Continuing with the Service Domain " + previousServiceDomain);
-			} else {
-				additionalProperties.put("serviceDomain", urlChunks[0]);
-			}
-			if (urlChunks.length > 2) {
-				Object previousControlRecord = additionalProperties.get("controlRecord");
-				if (previousControlRecord != null && !previousControlRecord.equals(urlChunks[1])) {
-					LOGGER.error("Service Domain is already set as '" + previousControlRecord
-							+ "'. A new Control Record is declared in '" + op.path + "' and is not allowed.");
-					LOGGER.error("Continuing with the Control Record " + previousControlRecord);
-				} else {
-					additionalProperties.put("controlRecord", urlChunks[1]);
-				}
-			}
+		op.vendorExtensions.put("actionTermCamelCase", actionTermCamelCase);
+		op.vendorExtensions.put("actionTermTitleCase", StringUtils.capitalize(actionTermCamelCase));
+		op.vendorExtensions.put("actionTerms", actionTerms);
+		
+		if(serviceOperation.getBehavioralQualifier() != null) {
+			op.vendorExtensions.put("behavioralQualifier", serviceOperation.getBehavioralQualifier());
 		}
     	
     }
     
-    private String resolveActionTerm(String urlChunk, String httpMethod, int urlChunkCount) {
-    	return 
-    		("initiation".equalsIgnoreCase(urlChunk) && "POST".equalsIgnoreCase(httpMethod) && urlChunkCount <= 3) ? "initiate" :
-    		("creation".equalsIgnoreCase(urlChunk) && "POST".equalsIgnoreCase(httpMethod) && urlChunkCount <= 3) ? "create" :
-    		("activation".equalsIgnoreCase(urlChunk) && "POST".equalsIgnoreCase(httpMethod) && urlChunkCount <= 3) ? "activate" :
-    		("registration".equalsIgnoreCase(urlChunk) && "POST".equalsIgnoreCase(httpMethod) && urlChunkCount <= 3) ? "register" :
-    		("configuration".equalsIgnoreCase(urlChunk) && "PUT".equalsIgnoreCase(httpMethod) && urlChunkCount <= 2) ? "configure" :
-    		("updation".equalsIgnoreCase(urlChunk) && "PUT".equalsIgnoreCase(httpMethod) && urlChunkCount <= 4) ? "update" :
-    		("recording".equalsIgnoreCase(urlChunk) && "POST".equalsIgnoreCase(httpMethod) && urlChunkCount <= 4) ? "record" :
-    		("execution".equalsIgnoreCase(urlChunk) && "POST".equalsIgnoreCase(httpMethod) && urlChunkCount <= 4) ? "execute" :
-    		("execution".equalsIgnoreCase(urlChunk) && "PUT".equalsIgnoreCase(httpMethod) && urlChunkCount <= 4) ? "execute" :
-    		("evaluation".equalsIgnoreCase(urlChunk) && "GET".equalsIgnoreCase(httpMethod) && urlChunkCount <= 4) ? "evaluate" :
-    		("provision".equalsIgnoreCase(urlChunk) && "POST".equalsIgnoreCase(httpMethod) && urlChunkCount <= 4) ? "provide" :
-    		("authorization".equalsIgnoreCase(urlChunk) && "PUT".equalsIgnoreCase(httpMethod) && urlChunkCount <= 4) ? "authorize" :
-    		("requisition".equalsIgnoreCase(urlChunk) && "POST".equalsIgnoreCase(httpMethod) && urlChunkCount <= 4) ? "request" :
-    		("DELETE".equalsIgnoreCase(httpMethod) && urlChunkCount <= 3) ? "terminate" :
-    		("notification".equalsIgnoreCase(urlChunk) && "POST".equalsIgnoreCase(httpMethod) && urlChunkCount <= 4) ? "notify" :
-    		("GET".equalsIgnoreCase(httpMethod) && urlChunkCount <= 3) ? "retrieve" :
-    		urlChunk;
+    private ServiceOperation resolveServiceOperation(String url, String httpMethod) {
     	
-//    	switch(urlChunk + httpMethod + urlChunkCount) {
-//    	case "initiation" + "POST" + 3 : return "initiate";
-//    	case "creation" + "POST" + 3 : return "create";
-//    	case "activation" + "POST" + 3 : return "activate";
-//    	case "registration" + "POST" + 3 : return "register";
-//    	case "configuration" + "PUT" + 2 : return "configure";
-//    	case "updation" + "PUT" + 4 : return "update";
-//    	case "recording" + "POST" + 4 : return "record";
-//    	case "execution" + "POST" + 4 : return "execute";
-//    	case "execution" + "PUT" + 4 : return "execute";
-//    	case "evaluation" + "GET" + 4 : return "evaluate";
-//    	case "provision" + "POST" + 4 : return "provide";
-//    	case "authorization" + "PUT" + 4:  return "authorize";
-//    	case "requisition" + "POST" + 4 : return "request";
-//    	case "%" + "DELETE" + 3 : return "terminate";
-//    	case "notification" + "POST" + 4 : return "notify";
-//    	case "%" + "GET" + 3 : return "retrieve";
-//    	}
-//    	return urlChunk;
+        String[] urlChunks = StringUtils.split(url, "/");
+		
+		Object previousServiceDomain = additionalProperties.get("serviceDomain");
+		if (previousServiceDomain != null && !previousServiceDomain.equals(urlChunks[0])) {
+			LOGGER.error("Service Domain is already set as '" + previousServiceDomain
+					+ "'. A new Service Domain is declared in '" + url + "' and is not allowed.");
+			LOGGER.error("Continuing with the Service Domain " + previousServiceDomain);
+		} else {
+			additionalProperties.put("serviceDomain", urlChunks[0]);
+		}
+		if (urlChunks.length > 2) {
+			Object previousControlRecord = additionalProperties.get("controlRecord");
+			if (previousControlRecord != null && !previousControlRecord.equals(urlChunks[1])) {
+				LOGGER.error("Service Domain is already set as '" + previousControlRecord
+						+ "'. A new Control Record is declared in '" + url + "' and is not allowed.");
+				LOGGER.error("Continuing with the Control Record " + previousControlRecord);
+			} else {
+				additionalProperties.put("controlRecord", urlChunks[1]);
+			}
+		}
+		
+		return this.getServiceOperation(urlChunks, httpMethod);
     }
+    
+    private ServiceOperation getServiceOperation(String[] urlChunks, String httpMethod) {
+
+    	return 
+    		("initiation".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "POST".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("initiate", urlChunks.length >= 5 ? urlChunks[urlChunks.length - 2] : null):
+    		("creation".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "POST".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("create", urlChunks.length >= 5 ? urlChunks[urlChunks.length - 2] : null):
+    		("activation".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "POST".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("initiate", urlChunks.length >= 5 ? urlChunks[urlChunks.length - 2] : null):
+    		("registration".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "POST".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("register", urlChunks.length >= 5 ? urlChunks[urlChunks.length - 2] : null):
+    		("configuration".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "PUT".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("configure", urlChunks.length >= 5 ? urlChunks[urlChunks.length - 2] : null):
+    		("updation".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "PUT".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("update", urlChunks.length >= 6 ? urlChunks[urlChunks.length - 3] : null):
+    		("recording".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "POST".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("record", urlChunks.length >= 6 ? urlChunks[urlChunks.length - 3] : null):
+    		("execution".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "POST".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("execute", urlChunks.length >= 6 ? urlChunks[urlChunks.length - 3] : null):
+    		("execution".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "PUT".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("execute", urlChunks.length >= 6 ? urlChunks[urlChunks.length - 3] : null):
+    		("evaluation".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "GET".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("evaluate", urlChunks.length >= 6 ? urlChunks[urlChunks.length - 3] : null):
+    		("provision".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "POST".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("provide", urlChunks.length >= 6 ? urlChunks[urlChunks.length - 3] : null):
+    		("authorization".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "PUT".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("authorize", urlChunks.length >= 6 ? urlChunks[urlChunks.length - 3] : null):
+    		("requisition".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "POST".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("request", urlChunks.length >= 6 ? urlChunks[urlChunks.length - 3] : null):
+    		("DELETE".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("terminate", urlChunks.length >= 5 ? urlChunks[urlChunks.length - 1] : null):
+    		("notification".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "POST".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("notify", urlChunks.length >= 6 ? urlChunks[urlChunks.length - 3] : null):
+    		("GET".equalsIgnoreCase(httpMethod)) ? 
+    				new ServiceOperation("retrieve", urlChunks.length >= 5 ? urlChunks[urlChunks.length - 1] : null): 
+    		new ServiceOperation(null, null);
+    	
+//		if("initiation".equalsIgnoreCase(urlChunks[urlChunks.length - 1]) && "POST".equalsIgnoreCase(httpMethod)) {
+//			actionTerm = "initiate";
+//			behavioralQualifier = urlChunks.length >= 5 ? urlChunks[urlChunks.length - 2] : null;
+//		}
+//    	return new ServiceOperation(actionTerm, behavioralQualifier);
+    }
+    
+	private class ServiceOperation {
+
+		private String serviceDomain;
+		private String controlRecord;
+		private String actionTerm;
+		private String behavioralQualifier;
+		
+		public ServiceOperation(String actionTerm, String behavioralQualifier) {
+			this.actionTerm = actionTerm;
+			this.behavioralQualifier = behavioralQualifier;
+		}
+		
+		public String getServiceDomain() {
+			return serviceDomain;
+		}
+
+		public void setServiceDomain(String serviceDomain) {
+			this.serviceDomain = serviceDomain;
+		}
+
+		public String getControlRecord() {
+			return controlRecord;
+		}
+
+		public void setControlRecord(String controlRecord) {
+			this.controlRecord = controlRecord;
+		}
+		
+		public String getActionTerm() {
+			return actionTerm;
+		}
+		
+		public void setActionTerm(String actionTerm) {
+			this.actionTerm = actionTerm;
+		}
+		
+		public String getBehavioralQualifier() {
+			return behavioralQualifier;
+		}
+		
+		public void setBehavioralQualifier(String behavioralQualifier) {
+			this.behavioralQualifier = behavioralQualifier;
+		}
+		
+	}
 }
